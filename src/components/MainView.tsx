@@ -106,7 +106,7 @@ export const MainView: React.FC = () => {
         <SessionControls />
       </div>
 
-      {/* Display AnalysisResultsContainer without the session controls UI */}
+      {/* Display AnalysisResultsContainer without the session controls UI  */}
       <div className="flex-grow overflow-auto">
         {isDataAvailable ? (
           <AnalysisResultsContainer
