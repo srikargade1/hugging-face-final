@@ -3,9 +3,7 @@ import {
   AiSliceState,
   createAiSlice,
   createDefaultAiConfig,
-  getDefaultInstructions,
 } from '@sqlrooms/ai';
-import {DataTable} from '@sqlrooms/duckdb';
 import {
   BaseRoomConfig,
   createRoomShellSlice,
@@ -30,6 +28,7 @@ import EchoToolResult from './components/EchoToolResult';
 import {MainView} from './components/MainView';
 import exampleSessions from './example-sessions.json';
 import {DEFAULT_MODEL} from './models';
+
 
 export const RoomPanelTypes = z.enum([
   'room-details',
@@ -58,6 +57,12 @@ type CustomRoomState = {
   /** API keys by provider */
   apiKeys: Record<string, string | undefined>;
   setProviderApiKey: (provider: string, apiKey: string) => void;
+  
+  // HuggingFace configuration
+  huggingfaceEndpointUrl: string | undefined;
+  setHuggingfaceEndpointUrl: (url: string) => void;
+  huggingfaceModelId: string | undefined;
+  setHuggingfaceModelId: (modelId: string) => void;
 };
 export type RoomState = RoomShellSliceState<RoomConfig> &
   AiSliceState &
@@ -121,6 +126,7 @@ export const {roomStore, useRoomStore} = createRoomStore<RoomConfig, RoomState>(
         getApiKey: (modelProvider: string) => {
           return get()?.apiKeys[modelProvider] || '';
         },
+        
         // Add custom tools
         customTools: {
           // Add the VegaChart tool from the vega package with a custom description
@@ -143,12 +149,6 @@ export const {roomStore, useRoomStore} = createRoomStore<RoomConfig, RoomState>(
             component: EchoToolResult,
           },
         },
-        // Example of customizing the system instructions
-        getInstructions: (tablesSchema: DataTable[]) => {
-          // You can use getDefaultInstructions() and append to it
-          const defaultInstructions = getDefaultInstructions(tablesSchema);
-          return `${defaultInstructions}. Please be polite and concise.`;
-        },
       })(set, get, store),
 
       selectedModel: {
@@ -160,11 +160,23 @@ export const {roomStore, useRoomStore} = createRoomStore<RoomConfig, RoomState>(
       },
       apiKeys: {
         openai: undefined,
+        huggingface: undefined,        // ADD: For HF API token
+        anthropic: undefined,          // If you have other providers
       },
       setProviderApiKey: (provider: string, apiKey: string) => {
         set({
           apiKeys: {...get().apiKeys, [provider]: apiKey},
         });
+      },
+      
+      // HuggingFace configuration
+      huggingfaceEndpointUrl: undefined,
+      setHuggingfaceEndpointUrl: (url: string) => {
+        set({ huggingfaceEndpointUrl: url });
+      },
+      huggingfaceModelId: 'custom', // Default to custom
+      setHuggingfaceModelId: (modelId: string) => {
+        set({ huggingfaceModelId: modelId });
       },
     }),
 
@@ -177,6 +189,8 @@ export const {roomStore, useRoomStore} = createRoomStore<RoomConfig, RoomState>(
         config: RoomConfig.parse(state.config),
         selectedModel: state.selectedModel,
         apiKeys: state.apiKeys,
+        huggingfaceEndpointUrl: state.huggingfaceEndpointUrl,
+        huggingfaceModelId: state.huggingfaceModelId,
       }),
     },
   ) as StateCreator<RoomState>,

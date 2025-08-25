@@ -38,4 +38,10 @@ export const LLM_MODELS = [
     name: 'ollama',
     models: ['qwen3:32b', 'qwen3', CUSTOM_MODEL_NAME],
   },
+  {
+    name: 'huggingface',
+    models: [
+      'Deployed Endpoint',
+    ],
+  },
 ];
